@@ -1,4 +1,4 @@
-# Bookstore Management API
+# Picture Bookstore Management API
 
 ## Kurulum ve Çalıştırma
 
@@ -93,6 +93,106 @@ curl -X POST http://localhost:3000/books \
   "price": -29.99
 }'
 ```
+
+## Testing
+
+### Unit Tests
+
+Projenin unit testlerini çalıştırmak için:
+
+```bash
+# Tüm testleri çalıştırma
+npm test
+
+# Watch modunda çalıştırma
+npm run test:watch
+
+# Test coverage raporu ile çalıştırma
+npm run test:cov
+```
+
+### Test Coverage
+
+Unit testler aşağıdaki alanları kapsar:
+
+#### Auth Service Tests
+- Login işlemleri
+- Register işlemleri
+- JWT token doğrulaması
+- Exception handling
+
+#### Book Service Tests
+- Kitap oluşturma
+- Kitap sorgulama
+- Duplicate ISBN kontrolü
+- Not found senaryoları
+
+#### BookStore Service Tests
+- Mağaza sorgulama
+- Stok yönetimi
+- Yetersiz stok kontrolü
+- Exception handling
+
+### Test Örnekleri
+
+#### Auth service test örneği
+
+```typescript
+describe('login', () => {
+  it('should return token when credentials are valid', async () => {
+    const loginDto = {
+      email: 'admin@bookstore.com',
+      password: 'admin123'
+    };
+    const result = await authService.login(loginDto);
+    expect(result.access_token).toBeDefined();
+  });
+});
+```
+
+#### Book service test örneği
+
+```typescript
+describe('createBook', () => {
+  it('should throw error when ISBN exists', async () => {
+    const bookDto = {
+      title: 'Test Book',
+      author: 'Test Author',
+      isbn: '1234567890',
+      price: 29.99
+    };
+    await expect(bookService.create(bookDto))
+      .rejects.toThrow(DuplicateEntryException);
+  });
+});
+```
+
+### Logging ve Exception Testing
+
+Tüm servisler için:
+
+- Error logları
+- Info logları
+- Warning logları
+- Debug logları
+
+test edilmektedir.
+
+#### Log testing örneği
+
+```typescript
+expect(mockLogger.error).toHaveBeenCalledWith(
+  `Book not found with ID: ${bookId}`,
+  'BookService'
+);
+```
+
+### Test Environment
+
+- Jest test framework
+- Mock repositories
+- Mock logger service
+- Mock JWT service
 
 ## API Endpoints
 
