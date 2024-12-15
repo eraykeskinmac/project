@@ -47,6 +47,17 @@ export class BookService {
     return savedBook;
   }
 
+  async findAll(): Promise<Book[]> {
+    this.logger.log('Fetching all books', 'BookService');
+
+    const books = await this.bookRepository.find({
+      relations: ['bookStores'],
+    });
+
+    this.logger.log(`Found ${books.length} books`, 'BookService');
+    return books;
+  }
+
   async findOne(id: number): Promise<Book> {
     this.logger.log(`Searching for book with ID: ${id}`, 'BookService');
 
@@ -62,6 +73,7 @@ export class BookService {
     this.logger.log(`Found book: ${book.title}`, 'BookService');
     return book;
   }
+
   async update(id: number, updateBookDto: UpdateBookDto): Promise<Book> {
     this.logger.log(`Updating book with id: ${id}`, 'BookService');
     const book = await this.findOne(id);
@@ -72,6 +84,10 @@ export class BookService {
       });
 
       if (existingBook && existingBook.id !== id) {
+        this.logger.warn(
+          `Attempted to update book with existing ISBN: ${updateBookDto.isbn}`,
+          'BookService',
+        );
         throw new DuplicateEntryException(
           `Book with ISBN ${updateBookDto.isbn} already exists`,
         );
@@ -79,12 +95,18 @@ export class BookService {
     }
 
     Object.assign(book, updateBookDto);
-    return await this.bookRepository.save(book);
+    const updatedBook = await this.bookRepository.save(book);
+    this.logger.log(
+      `Successfully updated book: ${updatedBook.title}`,
+      'BookService',
+    );
+    return updatedBook;
   }
 
   async remove(id: number): Promise<void> {
     this.logger.log(`Removing book with id: ${id}`, 'BookService');
     const book = await this.findOne(id);
     await this.bookRepository.remove(book);
+    this.logger.log(`Successfully removed book with id: ${id}`, 'BookService');
   }
 }
