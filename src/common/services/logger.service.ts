@@ -11,22 +11,19 @@ export class CustomLogger implements LoggerService {
   }
 
   log(message: string, context?: string) {
-    this.logger.info(message, { context });
+    this.logger.info({ message, context });
   }
 
   error(message: string, trace?: string, context?: string) {
-    this.logger.error(message, { trace, context });
+    console.log('Error being logged:', { message, trace, context }); // Debug için
+    this.logger.error({ message, trace, context });
   }
 
   warn(message: string, context?: string) {
-    this.logger.warn(message, { context });
+    this.logger.warn({ message, context });
   }
 
   debug(message: string, context?: string) {
-    this.logger.debug(message, { context });
-  }
-
-  verbose(message: string, context?: string) {
-    this.logger.verbose(message, { context });
+    this.logger.debug({ message, context });
   }
 }

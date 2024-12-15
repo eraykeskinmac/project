@@ -45,8 +45,9 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
 
-  app.useGlobalFilters(new AllExceptionsFilter());
-
+  const exceptionFilter = app.get(AllExceptionsFilter);
+  app.useGlobalFilters(exceptionFilter);
+  
   const seeder = app.get(DatabaseSeeder);
   await seeder.seed();
 

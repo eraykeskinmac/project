@@ -7,6 +7,8 @@ import { BookStoreModule } from './bookstore/bookstore.module';
 import { AuthModule } from './auth/auth.module';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { LoggerModule } from './common/modules/logger.module';
+import { AllExceptionsFilter } from './common/exceptions/http-exception.filter';
+import { CustomLogger } from './common/services/logger.service';
 
 @Module({
   imports: [
@@ -34,6 +36,10 @@ import { LoggerModule } from './common/modules/logger.module';
     UserModule,
     BookModule,
     BookStoreModule,
+  ],
+  providers: [
+    CustomLogger,
+    AllExceptionsFilter
   ],
 })
 export class AppModule {}

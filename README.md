@@ -1,4 +1,4 @@
-# Picture Bookstore Management API
+# Bookstore Management API
 
 ## Kurulum ve Çalıştırma
 
@@ -47,36 +47,83 @@ docker-compose down -v
 - Default admin kullanıcısı ilk çalıştırmada otomatik oluşturulur
 - Veritabanı PostgreSQL container'ında persist edilir
 
+## Özellikler
+
+### Exception Handling
+- Custom exception sınıfları (NotFound, DuplicateEntry, InsufficientStock vb.)
+- Global exception filter ile merkezi hata yönetimi
+- Detaylı hata mesajları ve HTTP durum kodları
+- Validation pipe ile input doğrulama
+
+### Logging Sistemi
+- Winston logger implementasyonu
+- Farklı log seviyeleri (error, info, warn, debug)
+- Günlük rotasyonlu log dosyaları
+  - Application logs: /logs/application-YYYY-MM-DD.log
+  - Error logs: /logs/error-YYYY-MM-DD.log
+- Yapılandırılmış log formatı (JSON)
+- Request/response loglama
+- Exception loglama
+
+### Log Dosyaları
+
+```bash
+# Application loglarını görüntüleme
+tail -f logs/application-YYYY-MM-DD.log
+
+# Error loglarını görüntüleme
+tail -f logs/error-YYYY-MM-DD.log
+```
+
+### Exception Örnekleri
+
+```bash
+# Not Found Exception Test
+curl -X GET http://localhost:3000/bookstores/999 \
+-H "Authorization: Bearer YOUR_JWT_TOKEN"
+
+# Validation Error Test
+curl -X POST http://localhost:3000/books \
+-H "Authorization: Bearer YOUR_JWT_TOKEN" \
+-H "Content-Type: application/json" \
+-d '{
+  "title": "",
+  "author": "",
+  "isbn": "invalid-isbn",
+  "price": -29.99
+}'
+```
+
 ## API Endpoints
 
 ### Auth
 
-| Method | Endpoint       | Açıklama        | Rol   |
-| ------ | -------------- | --------------- | ----- |
-| POST   | /auth/login    | Giriş           | Hepsi |
-| POST   | /auth/register | Kullanıcı kaydı | Admin |
+| Method | Endpoint        | Açıklama       | Rol   |
+|--------|-----------------|----------------|-------|
+| POST   | /auth/login     | Giriş          | Hepsi |
+| POST   | /auth/register  | Kullanıcı kaydı| Admin |
 
 ### Books
 
-| Method | Endpoint   | Açıklama         | Rol   |
-| ------ | ---------- | ---------------- | ----- |
-| GET    | /books     | Kitap listesi    | Hepsi |
-| POST   | /books     | Kitap ekleme     | Admin |
-| GET    | /books/:id | Kitap detayı     | Hepsi |
-| PUT    | /books/:id | Kitap güncelleme | Admin |
-| DELETE | /books/:id | Kitap silme      | Admin |
+| Method | Endpoint        | Açıklama       | Rol   |
+|--------|-----------------|----------------|-------|
+| GET    | /books          | Kitap listesi  | Hepsi |
+| POST   | /books          | Kitap ekleme   | Admin |
+| GET    | /books/:id      | Kitap detayı   | Hepsi |
+| PUT    | /books/:id      | Kitap güncelleme | Admin |
+| DELETE | /books/:id      | Kitap silme    | Admin |
 
 ### Bookstores
 
-| Method | Endpoint                               | Açıklama          | Rol            |
-| ------ | -------------------------------------- | ----------------- | -------------- |
-| GET    | /bookstores                            | Mağaza listesi    | Hepsi          |
-| POST   | /bookstores                            | Mağaza ekleme     | Admin          |
-| GET    | /bookstores/:id                        | Mağaza detayı     | Hepsi          |
-| PUT    | /bookstores/:id                        | Mağaza güncelleme | Admin          |
-| POST   | /bookstores/:id/books/:bookId          | Kitap ekleme      | Admin, Manager |
-| DELETE | /bookstores/:id/books/:bookId          | Kitap çıkarma     | Admin, Manager |
-| GET    | /bookstores/:id/books/:bookId/quantity | Stok kontrolü     | Hepsi          |
+| Method | Endpoint                      | Açıklama         | Rol             |
+|--------|-------------------------------|------------------|-----------------|
+| GET    | /bookstores                   | Mağaza listesi   | Hepsi           |
+| POST   | /bookstores                   | Mağaza ekleme    | Admin           |
+| GET    | /bookstores/:id               | Mağaza detayı    | Hepsi           |
+| PUT    | /bookstores/:id               | Mağaza güncelleme| Admin           |
+| POST   | /bookstores/:id/books/:bookId | Kitap ekleme     | Admin, Manager  |
+| DELETE | /bookstores/:id/books/:bookId | Kitap çıkarma    | Admin, Manager  |
+| GET    | /bookstores/:id/books/:bookId/quantity | Stok kontrolü | Hepsi |
 
 ## Environment Variables (.env)
 
