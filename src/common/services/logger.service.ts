@@ -15,7 +15,6 @@ export class CustomLogger implements LoggerService {
   }
 
   error(message: string, trace?: string, context?: string) {
-    console.log('Error being logged:', { message, trace, context }); // Debug için
     this.logger.error({ message, trace, context });
   }
 
