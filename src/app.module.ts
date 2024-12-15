@@ -37,9 +37,6 @@ import { CustomLogger } from './common/services/logger.service';
     BookModule,
     BookStoreModule,
   ],
-  providers: [
-    CustomLogger,
-    AllExceptionsFilter
-  ],
+  providers: [CustomLogger, AllExceptionsFilter],
 })
 export class AppModule {}

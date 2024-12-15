@@ -17,7 +17,7 @@ services:
       - DB_DATABASE=bookstore_db
       - JWT_SECRET=${JWT_SECRET:-mysecretkey}
     volumes:
-      - ./logs:/usr/src/app/logs  # Sadece logs volume'u aktif
+      - ./logs:/usr/src/app/logs
     restart: unless-stopped
 
   postgres:
