@@ -39,19 +39,19 @@ export class AuthService {
     );
 
     if (!isPasswordValid) {
+      this.logger.warn(
+        `Invalid password for user: ${loginDto.email}`,
+        'AuthService',
+      );
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const payload = {
-      sub: user.id,
-      email: user.email,
-      role: user.role.name,
-    };
-
+    const payload = { sub: user.id, email: user.email, role: user.role.name };
     this.logger.log(
       `Successful login for user: ${loginDto.email}`,
       'AuthService',
     );
+
     return {
       access_token: this.jwtService.sign(payload),
       user: {
@@ -72,13 +72,16 @@ export class AuthService {
     });
 
     if (existingUser) {
+      this.logger.warn(
+        `Registration failed: Email ${registerDto.email} already exists`,
+        'AuthService',
+      );
       throw new DuplicateEntryException(
         `User with email ${registerDto.email} already exists`,
       );
     }
 
     const hashedPassword = await bcrypt.hash(registerDto.password, 10);
-
     const user = this.userRepository.create({
       email: registerDto.email,
       password: hashedPassword,
@@ -87,13 +90,11 @@ export class AuthService {
     });
 
     await this.userRepository.save(user);
-
     const { password, ...result } = user;
     this.logger.log(
       `Successfully registered user: ${registerDto.email}`,
       'AuthService',
     );
-
     return result;
   }
 }

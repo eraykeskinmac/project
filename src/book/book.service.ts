@@ -3,12 +3,12 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Book } from '../entities/book.entity';
 import { CreateBookDto } from './dto/create-book.dto';
-import { UpdateBookDto } from './dto/update-book.dto';
 import {
   BookNotFoundException,
   DuplicateEntryException,
 } from '../common/exceptions/custom.exception';
 import { CustomLogger } from 'src/common/services/logger.service';
+import { UpdateBookDto } from './dto/update-book.dto';
 
 @Injectable()
 export class BookService {
@@ -19,38 +19,49 @@ export class BookService {
   ) {}
 
   async create(createBookDto: CreateBookDto): Promise<Book> {
-    this.logger.log(`Creating new book: ${createBookDto.title}`, 'BookService');
+    this.logger.log(
+      `Attempting to create book: ${createBookDto.title}`,
+      'BookService',
+    );
 
     const existingBook = await this.bookRepository.findOne({
       where: { isbn: createBookDto.isbn },
     });
 
     if (existingBook) {
+      this.logger.warn(
+        `Duplicate book creation attempt with ISBN: ${createBookDto.isbn}`,
+        'BookService',
+      );
       throw new DuplicateEntryException(
         `Book with ISBN ${createBookDto.isbn} already exists`,
       );
     }
 
     const book = this.bookRepository.create(createBookDto);
-    return await this.bookRepository.save(book);
-  }
-
-  async findAll(): Promise<Book[]> {
-    return await this.bookRepository.find();
+    const savedBook = await this.bookRepository.save(book);
+    this.logger.log(
+      `Successfully created book: ${savedBook.title}`,
+      'BookService',
+    );
+    return savedBook;
   }
 
   async findOne(id: number): Promise<Book> {
+    this.logger.log(`Searching for book with ID: ${id}`, 'BookService');
+
     const book = await this.bookRepository.findOne({
       where: { id },
     });
 
     if (!book) {
+      this.logger.error(`Book not found with ID: ${id}`, 'BookService');
       throw new BookNotFoundException(id);
     }
 
+    this.logger.log(`Found book: ${book.title}`, 'BookService');
     return book;
   }
-
   async update(id: number, updateBookDto: UpdateBookDto): Promise<Book> {
     this.logger.log(`Updating book with id: ${id}`, 'BookService');
     const book = await this.findOne(id);

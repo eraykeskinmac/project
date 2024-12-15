@@ -49,15 +49,25 @@ export class BookStoreService {
   }
 
   async findOne(id: number): Promise<BookStore> {
+    this.logger.log(
+      `Searching for bookstore with ID: ${id}`,
+      'BookStoreService',
+    );
+
     const bookStore = await this.bookStoreRepository.findOne({
       where: { id },
       relations: ['books', 'books.book'],
     });
 
     if (!bookStore) {
+      this.logger.error(
+        `Bookstore not found with ID: ${id}`,
+        'BookStoreService',
+      );
       throw new BookStoreNotFoundException(id);
     }
 
+    this.logger.log(`Found bookstore: ${bookStore.name}`, 'BookStoreService');
     return bookStore;
   }
 
@@ -121,9 +131,10 @@ export class BookStoreService {
     quantity: number,
   ): Promise<BookStoreBook> {
     this.logger.log(
-      `Removing ${quantity} books (ID: ${bookId}) from store (ID: ${storeId})`,
+      `Attempting to remove ${quantity} books(ID: ${bookId}) from store ${storeId}`,
       'BookStoreService',
     );
+
     await this.findOne(storeId);
 
     const record = await this.bookStoreBookRepository.findOne({
@@ -134,10 +145,18 @@ export class BookStoreService {
     });
 
     if (!record) {
+      this.logger.error(
+        `Book ${bookId} not found in store ${storeId}`,
+        'BookStoreService',
+      );
       throw new BookStoreNotFoundException(storeId);
     }
 
     if (record.quantity < quantity) {
+      this.logger.error(
+        `Insufficient stock for book ${bookId} in store ${storeId}`,
+        'BookStoreService',
+      );
       throw new InsufficientStockException(bookId, record.quantity);
     }
 
@@ -145,14 +164,22 @@ export class BookStoreService {
 
     if (record.quantity === 0) {
       await this.bookStoreBookRepository.remove(record);
+      this.logger.log(
+        `Removed all copies of book ${bookId} from store ${storeId}`,
+        'BookStoreService',
+      );
       return null;
     }
 
-    return await this.bookStoreBookRepository.save(record);
+    const updatedRecord = await this.bookStoreBookRepository.save(record);
+    this.logger.log(
+      `Successfully removed ${quantity} books from store ${storeId}`,
+      'BookStoreService',
+    );
+    return updatedRecord;
   }
 
   async getBookQuantity(storeId: number, bookId: number): Promise<number> {
-    // Mağaza var mı kontrolü yapılıyor
     await this.findOne(storeId);
 
     const record = await this.bookStoreBookRepository.findOne({
